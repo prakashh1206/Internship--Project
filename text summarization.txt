@@ -1,0 +1,55 @@
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize, sent_tokenize
+import string
+
+# Download NLTK resources (only once)
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('punkt_tab') # Download punkt_tab resource
+
+
+def summarize(text, num_sentences=2):
+    stop_words = set(stopwords.words("english"))
+    words = word_tokenize(text.lower())
+
+    # Word frequency (excluding stopwords and punctuation)
+    freq_table = {}
+    for word in words:
+        if word in stop_words or word in string.punctuation:
+            continue
+        freq_table[word] = freq_table.get(word, 0) + 1
+
+    # Sentence scoring
+    sentences = sent_tokenize(text)
+    sentence_scores = {}
+    for sent in sentences:
+        word_count = 0
+        for word in word_tokenize(sent.lower()):
+            if word in freq_table:
+                sentence_scores[sent] = sentence_scores.get(sent, 0) + freq_table[word]
+                word_count += 1
+        if sent in sentence_scores:
+            sentence_scores[sent] = sentence_scores[sent] / word_count  # normalize
+
+    # Pick top sentences
+    summary_sentences = sorted(sentence_scores, key=sentence_scores.get, reverse=True)[:num_sentences]
+    return ' '.join(summary_sentences)
+
+# Example text
+text = """Artificial Intelligence (AI) refers to the simulation of human intelligence in machines that are programmed to think and act like humans. These machines are capable of learning from experience, adjusting to new inputs, and performing tasks that typically require human intelligence. AI has become an essential part of the technology industry and has numerous applications in various sectors, including healthcare, finance, education, transportation, and more.
+
+One of the core components of AI is machine learning, which enables computers to learn from data without being explicitly programmed. Through algorithms and statistical models, machine learning systems can improve their performance over time by identifying patterns and making decisions with minimal human intervention. Deep learning, a subset of machine learning, uses neural networks with many layers (hence "deep") to analyze large amounts of data and is the backbone of modern AI applications such as image recognition, natural language processing, and autonomous vehicles.
+
+AI is also revolutionizing the field of natural language processing (NLP), enabling machines to understand, interpret, and respond to human language. Tools like voice assistants, chatbots, and language translation apps rely heavily on NLP techniques to interact effectively with users. This has opened up new possibilities in customer service, content generation, and real-time communication.
+
+Despite the incredible benefits of AI, it also raises significant ethical and social concerns. Questions about privacy, job displacement, algorithmic bias, and accountability are becoming increasingly important as AI systems become more powerful and pervasive. Governments, organizations, and researchers are actively working on policies and frameworks to ensure that AI is developed and used responsibly.
+
+The future of AI holds immense promise. As the technology continues to evolve, it is expected to drive innovation across all industries, enhance human productivity, and tackle complex global challenges. However, balancing progress with ethical responsibility will be critical in shaping a future where AI serves the greater good of humanity.
+
+
+"""
+
+# Run the summarizer
+summary = summarize(text, num_sentences=2)
+print("Summary:\n", summary)
